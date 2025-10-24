@@ -4,8 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telemarketing Follow-up Workflow</title>
-    <!-- Load Tailwind CSS for styling -->
+    
+    <!-- 1. Add Google Font link for 'Inter' -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- 2. Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 3. Configure Tailwind to use 'Inter' as the default font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 4. Your custom styles -->
     <style>
         /* Custom styles for professional look and feel */
         :root {
@@ -14,7 +35,7 @@
             --bg-color: #f9fafb; /* Gray 50 */
         }
         body {
-            font-family: 'Inter', sans-serif;
+            /* font-family: 'Inter', sans-serif;  <-- No longer needed here */
             background-color: var(--bg-color);
         }
         .step-card {
