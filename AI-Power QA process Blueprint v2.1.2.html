@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered QA Process v2.1.2</title>
+    <style>
+        /* --- Base Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.4s, color 0.4s;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .slide {
+            padding: 30px 45px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+            border: 1px solid transparent;
+            transition: background-color 0.4s, border-color 0.4s;
+        }
+        h1, h2, h3, p, li {
+             transition: color 0.4s;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.8em;
+            margin-bottom: 10px;
+        }
+        h1 + p {
+            text-align: center;
+            font-size: 1.4em;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2em;
+            border-bottom: 3px solid;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            transition: border-color 0.4s;
+        }
+        h3 {
+            font-size: 1.5em;
+            margin-top: 25px;
+        }
+        p, li {
+            font-size: 1.15em;
+            line-height: 1.7;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 15px;
+        }
+        ul li::before {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 1.2em;
+        }
+        .tool-stack {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 25px;
+        }
+        .tool-card {
+            border: 1px solid;
+            border-radius: 8px;
+            padding: 20px;
+            width: 200px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+        }
+        .tool-card strong {
+            font-size: 1.2em;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .step {
+            border: 1px solid;
+            border-left: 5px solid;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .step .step-number {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        .step .step-content {
+            flex: 1;
+        }
+        .step strong {
+            font-size: 1.2em;
+        }
+
+        /* --- Theme Switcher --- */
+        .theme-switcher {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            background: #fff;
+            padding: 8px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            gap: 5px;
+        }
+        .theme-switcher button {
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .theme-switcher button.active {
+            color: #fff;
+        }
+
+        /* --- THEME 1: Original --- */
+        body.theme-original { background-color: #f8f9fa; color: #333; }
+        .theme-original .slide { background-color: #ffffff; border-color: #e0e0e0; }
+        .theme-original h1, .theme-original h2, .theme-original .tool-card strong, .theme-original .step .step-number { color: #007bff; }
+        .theme-original h1 + p { color: #555; }
+        .theme-original p, .theme-original li, .theme-original h3, .theme-original .step strong { color: #444; }
+        .theme-original ul li::before { content: '✅'; color: #28a745; }
+        .theme-original .challenge-list li::before { content: '🎯'; color: #dc3545; }
+        .theme-original .tool-card { background-color: #f8f9fa; border-color: #ddd; }
+        .theme-original .step { background-color: #fdfdfd; border-color: #eee; border-left-color: #007bff; }
+        .theme-original .final-slide { background: linear-gradient(45deg, #007bff, #0056b3); color: #ffffff; }
+        .theme-original .final-slide h2, .theme-original .final-slide p, .theme-original .final-slide ul li { color: #ffffff; }
+        .theme-original .final-slide h2 { border-bottom-color: #ffffff; }
+        .theme-original .theme-switcher button.active { background-color: #007bff; }
+
+        /* --- THEME 2: Creative (Dark Mode) --- */
+        body.theme-creative { background-color: #1a1a2e; color: #e0e0e0; }
+        .theme-creative .slide { background-color: #24243e; border-color: #4a4a6a; }
+        .theme-creative h1, .theme-creative h2, .theme-creative .tool-card strong { color: #f92582; }
+        .theme-creative .step .step-number { color: #00f5d4;}
+        .theme-creative h1 + p { color: #a9a9d4; }
+        .theme-creative p, .theme-creative li, .theme-creative h3, .theme-creative .step strong { color: #c0c0e0; }
+        .theme-creative ul li::before { content: '🚀'; color: #00f5d4; }
+        .theme-creative .challenge-list li::before { content: '💡'; color: #fee440; }
+        .theme-creative .tool-card { background-color: #1a1a2e; border-color: #f92582; }
+        .theme-creative .tool-card:hover { box-shadow: 0 0 15px rgba(249, 37, 130, 0.5); }
+        .theme-creative .step { background-color: #2a2a4a; border-color: #4a4a6a; border-left-color: #00f5d4; }
+        .theme-creative .final-slide { background: linear-gradient(45deg, #f92582, #a40e9d); color: #ffffff; }
+        .theme-creative .final-slide h2, .theme-creative .final-slide p, .theme-creative .final-slide ul li { color: #ffffff; }
+        .theme-creative .final-slide h2 { border-bottom-color: #ffffff; }
+        .theme-creative .theme-switcher button.active { background-color: #f92582; }
+
+        /* --- THEME 3: Blueprint (New Theme) --- */
+        body.theme-blueprint { background-color: #1A202C; color: #E2E8F0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        .theme-blueprint .slide { background-color: #2D3748; border-color: #4A5568; box-shadow: none; }
+        .theme-blueprint h1, .theme-blueprint h2, .theme-blueprint .tool-card strong, .theme-blueprint .step .step-number { color: #00c896; }
+        .theme-blueprint h1 + p { color: #A0AEC0; }
+        .theme-blueprint p, .theme-blueprint li, .theme-blueprint h3, .theme-blueprint .step strong { color: #E2E8F0; }
+        .theme-blueprint ul li::before { content: '✓'; font-weight: bold; color: #00c896; }
+        .theme-blueprint .challenge-list li::before { content: '✓'; font-weight: bold; color: #00c896; }
+        .theme-blueprint .tool-card { background-color: #1A202C; border-color: #4A5568; }
+        .theme-blueprint .tool-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 200, 150, 0.1); }
+        .theme-blueprint .step { background-color: transparent; border: none; border-left: 3px solid #00c896; padding-left: 20px;}
+        .theme-blueprint .final-slide { background-color: #2D3748; border-color: #4A5568; } /* Keep final slide consistent */
+        .theme-blueprint .final-slide h2 { border-bottom-color: #00c896; }
+        .theme-blueprint .final-slide p, .theme-blueprint .final-slide ul li { color: #E2E8F0; }
+        .theme-blueprint .theme-switcher button.active { background-color: #00c896; }
+
+        /* Custom colors for Blueprint theme */
+        .theme-blueprint .gemini-color { color: #F97316; } /* Orange */
+        .theme-blueprint .langflow-color { color: #A78BFA; } /* Purple */
+
+        /* Style for the Next Step box */
+        .next-step-box {
+            background-color: #242c3b; /* Darker background */
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+        }
+        .next-step-label {
+            color: #00c896; /* Cyan label */
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body class="theme-blueprint">
+
+    <div class="theme-switcher">
+        <button id="btn-original" onclick="setTheme('theme-original')">Original</button>
+        <button id="btn-creative" onclick="setTheme('theme-creative')">Creative</button>
+        <button id="btn-blueprint" class="active" onclick="setTheme('theme-blueprint')">Blueprint</button>
+    </div>
+
+    <div class="container">
+
+        <!-- SLIDE 1: TITLE SLIDE -->
+        <div class="slide">
+            <h1>AI-powered QA process Blueprint v1</h1>
+            <p>A $0-Budget Initiative to Automate and Revolutionize Our QA</p>
+        </div>
+
+        <!-- SLIDE 2: THE MISSION & CHALLENGES -->
+        <div class="slide">
+            <h2>Our Mission & Core Challenges</h2>
+            <p>Our goal is to create a highly automated QA workflow that moves from user story to executed test, even without a deep coding background.</p>
+            
+            <h3>The Challenges We Are Solving:</h3>
+            <ul class="challenge-list">
+                <li><strong>The "Manual Work" Bottleneck:</strong> Eliminating time-consuming manual test execution.</li>
+                <li><strong>The "No-Coder" Hurdle:</strong> Empowering a non-developer to create and manage robust automation.</li>
+                <li><strong>The "No-History" Problem:</strong> Gaining analytics and run history from our local-only Cypress setup.</li>
+                <li><strong>The "$0 Budget" Constraint:</strong> Achieving all of the above with a stack of powerful, free tools.</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 4: 4-STEP AI-POWERED WORKFLOW -->
+        <div class="slide">
+            <h2>4-Step AI-Powered Workflow</h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <strong>Scenario Generation</strong><br>
+                    <p>We feed the user story into Google Gemini. It analyzes the requirements and generates a comprehensive list of test scenarios (positive, negative, edge cases) in the structured Gherkin format.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <strong>Initial Script Creation (The "Recorder")</strong><br>
+                    <p>We open the built-in Cypress Recorder and simply click through the application as a user would. Cypress watches our actions and generates the raw, functional test script automatically.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <strong>Script Enhancement (The "Refiner")</strong><br>
+                    <p>We paste the raw script into a custom "Cypress Refiner" we build in LangFlow. This AI flow automatically adds crucial assertions, improves selectors, and adds comments, turning a brittle script into a robust test.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <strong>Execution & Reporting</strong><br>
+                    <p>The refined script is run locally. All results, test videos, and error screenshots are automatically sent to our free, self-hosted <strong>Currents.dev dashboard</strong> for full history and analysis.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: THE TOOL STACK -->
+        <div class="slide">
+            <h2>Our $0-Budget Tool Stack</h2>
+            <div class="tool-stack">
+                <div class="tool-card">
+                    <strong class="gemini-color">Google Gemini</strong>
+                    <p>For AI-powered test scenario and idea generation.</p>
+                </div>
+                <div class="tool-card">
+                    <strong>Cypress</strong>
+                    <p>For industry-standard test recording and local execution.</p>
+                </div>
+                <div class="tool-card">
+                    <strong class="langflow-color">LangFlow</strong>
+                    <p>To build our custom "Script Refiner" AI workflow.</p>
+                </div>
+                <div class="tool-card">
+                    <strong>Currents.dev</strong>
+                    <p>Our free, self-hosted dashboard for all test history and reports.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: BENEFITS & NEXT STEPS -->
+        <div class="slide final-slide">
+            <h2>Key Benefits & Next Steps</h2>
+            <ul>
+                <li><strong>Solves All Key Challenges:</strong> This plan directly addresses our manual work, "no-code" gap, lack of history, and zero-budget constraints.</li>
+                <li><strong>Empowering:</strong> It allows a single person to manage a sophisticated automation suite that would normally require a dedicated team.</li>
+                <li><strong>Scalable:</strong> This blueprint creates a foundation we can easily build on, adding more complex tests and integrations in the future.</li>
+            </ul>
+            <p class="next-step-box"><span class="next-step-label">Next Step:</span> I will begin a Proof of Concept (POC) by automating one key user story to validate this entire flow and demonstrate its power.</p>
+        </div>
+
+    </div>
+    <script>
+        function setTheme(themeName) {
+            document.body.className = themeName;
+            
+            // Update active button
+            document.querySelectorAll('.theme-switcher button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + themeName.split('-')[1]).classList.add('active');
+        }
+    </script>
+</body>
+</html>
