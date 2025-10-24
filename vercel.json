@@ -1,1 +1,1 @@
-{"version": 2, "rewrites": [{"source": "/Project_2025/:match*", "destination": "/Project_2025/:match*.html"}]} destination: "/Project_2025/:match*.html"
+{"version": 2, "rewrites": [{"source": "/Project_2025/:match*", "destination": "/Project_2025/:match*.html"}]}
