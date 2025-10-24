@@ -1,3 +1,7 @@
-{ "version": 2, "rewrites": 
-  [ { "source": "/", "destination": "/index.html" }, 
-    { "source": "/Project_2025/:match*", "destination": "/Project_2025/:match*.html" } ] } 
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/Project_2025/:match*", "destination": "/Project_2025/:match*.html" }
+  ]
+}
