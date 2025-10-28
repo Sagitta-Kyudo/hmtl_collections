@@ -3,30 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telemarketing Follow-up Workflow</title>
-    
-    <!-- 1. Add Google Font link for 'Inter' -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- 2. Load Tailwind CSS -->
+    <title>Automated Lead Ingestion & Follow-up Workflow</title>
+    <!-- Load Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 3. Configure Tailwind to use 'Inter' as the default font -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    
-    <!-- 4. Your custom styles -->
     <style>
         /* Custom styles for professional look and feel */
         :root {
@@ -35,7 +14,7 @@
             --bg-color: #f9fafb; /* Gray 50 */
         }
         body {
-            /* font-family: 'Inter', sans-serif;  <-- No longer needed here */
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
         }
         .step-card {
@@ -58,7 +37,7 @@
         <header class="text-center mb-10 p-6 bg-white shadow-xl rounded-xl">
             <!-- Changed text-gray-900 to text-blue-700 -->
             <h1 class="text-4xl font-extrabold text-blue-700 mb-2">
-                CRM: Telemarketing Follow-Up Workflow
+                CRM: Telemarketer Follow-Up Workflow
             </h1>
             <p class="text-xl text-gray-600">
                 Automated Lead Ingestion and 3-Attempt WhatsApp Follow-up (MVP)
@@ -114,8 +93,8 @@
                     </div>
                     <p class="text-gray-700">The CRM System executes <b>Automated Scraping (UI Automation)</b> to retrieve daily member and transaction reports from the Data Source.</p>
                     <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
-                        <span class="font-semibold text-yellow-800">Outcome:</span> New record created in staging.
-                        <p class="font-bold text-red-600 mt-1">Action Item: Replace manual Excel imports immediately.</p>
+                        <span class="font-semibold text-yellow-800">Outcome:</span> Import records into CRM system.
+                        <p class="font-bold text-red-600 mt-1">Action Item: Access permission for the Nuke system will be granted for data extraction.</p>
                     </div>
                 </div>
 
@@ -223,7 +202,7 @@
                         </div>
                         <p class="text-gray-700">If <b>three attempts</b> are made without success, the member lead is retired from the active follow-up queue.</p>
                         <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
-                            <span class="font-semibold text-yellow-800">Outcome:</span> Member status set to <b>'Dormant'</b> or <b>'Archive'</b>.
+                            <span class="font-semibold text-yellow-800">Outcome:</span> Member status set to <b>'Dormant'</b>.
                         </div>
                         <div class="mt-3 p-3 text-sm rounded-lg security-note">
                             <span class="font-bold">DATA STORAGE:</span> Chat history retained for historical reporting. Store efficiently (<b>metadata only</b>) to manage large data volumes.
@@ -260,7 +239,7 @@
                 <!-- Data Integrity/Contingency: Label strong, text normal (REVISED) -->
                 <li><strong class="text-blue-700">Data Integrity/Contingency:</strong> If a Telemarketer's number is banned, a new number must be registered to maintain webhook access and chat history continuity.</li>
                 <!-- KPI Alignment: Label strong, text normal (REVISED) -->
-                <li><strong class="text-blue-700">KPI Alignment:</strong> A successful engagement/conversion meets the Telemarketer's KPI; an unsuccessful lead retires the lead without meeting the KPI.</li>
+                <li><strong class="text-blue-700">KPI Alignment:</strong> A successful engagement/conversion meets the Telemarketer's KPI; an unsuccessful lead retires the lead without meeting the KPI. The number of contact attempts allowed is governed by the default system configuration.</li>
             </ul>
         </section>
 
