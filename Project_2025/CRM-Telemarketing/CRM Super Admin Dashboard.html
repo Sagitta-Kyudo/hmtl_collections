@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard Concepts v1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide icons for clean UI elements -->
+    <script type="module">
+        import { createIcons, Monitor, Users, TrendingUp, DollarSign, AlertTriangle, XCircle, ChevronDown, Award } from 'https://unpkg.com/lucide@latest/dist/esm/lucide.js';
+        
+        // --- FIXED: Export icons and function to window scope ---
+        window.LUCIDE_ICONS = { Monitor, Users, TrendingUp, DollarSign, AlertTriangle, XCircle, ChevronDown, Award };
+        window.lucideCreateIcons = createIcons;
+        // ----------------------------------------------------
+
+        createIcons({ icons: window.LUCIDE_ICONS });
+    </script>
+    <style>
+        /* Styling for the gaming platform aesthetic */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Dark background */
+            color: #c9d1d9; /* Light text */
+        }
+        .card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .kpi-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #58a6ff; /* Primary accent color */
+        }
+        .kpi-title {
+            color: #8b949e;
+            font-weight: 500;
+        }
+        .alert-critical {
+            background-color: #490e18;
+            border-left: 4px solid #f85149;
+        }
+        .table th {
+            background-color: #21262d;
+            color: #c9d1d9;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2">Super Admin Dashboard Overview</h1>
+            <p class="text-lg text-gray-400">Strategic control center for telemarketing operations.</p>
+        </header>
+
+        <!-- Dashboard Selector -->
+        <div class="flex flex-wrap gap-4 mb-8">
+            <button id="btn-var1" class="px-5 py-2.5 rounded-lg text-sm font-semibold transition bg-blue-600 hover:bg-blue-700 text-white shadow-lg">1. Executive Summary Focus</button>
+            <button id="btn-var2" class="px-5 py-2.5 rounded-lg text-sm font-semibold transition bg-gray-600 hover:bg-gray-700 text-white">2. Action-Oriented Focus</button>
+            <button id="btn-var3" class="px-5 py-2.5 rounded-lg text-sm font-semibold transition bg-gray-600 hover:bg-gray-700 text-white">3. Performance Deep Dive</button>
+        </div>
+
+        <!-- Dashboard Containers (Only one is visible at a time) -->
+        <div id="dashboard-container">
+            <!-- Content will be injected here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Dummy Data Object (Consistent across all variations) -->
+    <script>
+        const DUMMY_DATA = {
+            conversionRate: "5.5%",
+            depositTotalCount: "12,450",
+            depositTotalAmount: "€1.2M",
+            leadersCount: 12,
+            telemarketersCount: 30,
+            systemAlerts: [
+                { type: 'CRITICAL', message: 'Import job failed (ID: JX-1092). Last attempt 09:45 AM.' },
+                { type: 'WARNING', message: '3 Telemarketers inactive (>7 days no login).' }
+            ],
+            leaderDistribution: {
+                new: 2100,
+                active: 5500,
+                inactive: 4400,
+                total: 12000
+            },
+            leaderPerformance: [
+                { name: 'Leader Alpha', convRate: '6.1%', revenue: '€180K' },
+                { name: 'Leader Beta', convRate: '5.9%', revenue: '€165K' },
+                { name: 'Leader Gamma', convRate: '5.2%', revenue: '€120K' },
+                { name: 'Leader Delta', convRate: '4.8%', revenue: '€150K' },
+                { name: 'Leader Epsilon', convRate: '4.5%', revenue: '€95K' },
+                { name: 'Leader Zeta', convRate: '4.2%', revenue: '€105K' },
+            ]
+        };
+        
+        // --- Shared Components for Reusability ---
+
+        // KPI Card Component
+        const KPICard = (title, value, iconName) => `
+            <div class="card p-6 flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <p class="kpi-title text-sm uppercase">${title}</p>
+                    <i data-lucide="${iconName}" class="w-6 h-6 text-blue-500"></i>
+                </div>
+                <div class="mt-4">
+                    <p class="kpi-value">${value}</p>
+                    <p class="text-xs text-green-400 mt-1 flex items-center">
+                        <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i> +0.5% MTD
+                    </p>
+                </div>
+            </div>
+        `;
+
+        // System Alerts Component
+        const SystemAlertsComponent = (data) => `
+            <div class="card p-4">
+                <h3 class="text-xl font-semibold mb-3 border-b border-gray-700 pb-2 flex items-center">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 mr-2 text-red-500"></i> System Alerts
+                </h3>
+                ${data.map(alert => `
+                    <div class="p-3 mb-2 rounded-lg text-sm ${alert.type === 'CRITICAL' ? 'alert-critical border-red-600' : 'bg-yellow-900 border-yellow-500 border-l-4'}">
+                        <p class="font-medium">${alert.message}</p>
+                        <button class="text-xs text-blue-400 mt-1 hover:text-blue-300">View Details/Action</button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // User & Role Management Component
+        const UserRoleComponent = (data) => `
+            <div class="card p-4">
+                <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2 flex items-center">
+                    <i data-lucide="users" class="w-5 h-5 mr-2 text-green-500"></i> User & Role Management
+                </h3>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-gray-800 p-3 rounded-md">
+                        <p class="text-3xl font-bold text-green-400">${data.leadersCount}</p>
+                        <p class="text-sm text-gray-400">Leaders</p>
+                    </div>
+                    <div class="bg-gray-800 p-3 rounded-md">
+                        <p class="text-3xl font-bold text-green-400">${data.telemarketersCount}</p>
+                        <p class="text-sm text-gray-400">Telemarketers</p>
+                    </div>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition duration-200">
+                        Quick Action: Add Leader
+                    </button>
+                    <button class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 rounded-md transition duration-200">
+                        Target Adjustment (% per Leader)
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Leader Performance Table Component
+        const LeaderTableComponent = (title, data, sortBy, valueColTitle) => `
+            <div class="card p-4">
+                <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2 flex items-center">
+                    <i data-lucide="award" class="w-5 h-5 mr-2 text-yellow-500"></i> ${title}
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left table-auto table">
+                        <thead>
+                            <tr>
+                                <th class="p-2 text-sm font-medium">Rank</th>
+                                <th class="p-2 text-sm font-medium">Leader</th>
+                                <th class="p-2 text-sm font-medium text-right">${valueColTitle}</th>
+                                <th class="p-2 text-sm font-medium text-right">Conversion Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.slice(0, 5).sort((a, b) => {
+                                if (sortBy === 'rate') return parseFloat(b.convRate) - parseFloat(a.convRate);
+                                if (sortBy === 'revenue') return parseFloat(b.revenue.replace(/[^0-9.]/g, '')) - parseFloat(a.revenue.replace(/[^0-9.]/g, ''));
+                            }).map((leader, index) => `
+                                <tr class="${index % 2 === 0 ? 'bg-gray-800' : 'bg-transparent'} hover:bg-gray-700 transition">
+                                    <td class="p-2 font-bold ${index < 3 ? 'text-yellow-400' : 'text-gray-400'}">${index + 1}</td>
+                                    <td class="p-2">${leader.name}</td>
+                                    <td class="p-2 text-right">${sortBy === 'revenue' ? leader.revenue : leader.convRate}</td>
+                                    <td class="p-2 text-right">${sortBy === 'revenue' ? leader.convRate : '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        // Member Distribution Chart Placeholder
+        const MemberDistributionComponent = (data) => `
+            <div class="card p-4 h-full flex flex-col">
+                <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2 flex items-center">
+                    <i data-lucide="monitor" class="w-5 h-5 mr-2 text-blue-500"></i> Member Distribution Overview
+                </h3>
+                <div class="flex-grow flex flex-col justify-center items-center text-center">
+                    <p class="text-3xl font-bold text-white mb-4">${data.total.toLocaleString()} Total Members</p>
+                    <div class="w-full flex justify-around text-sm mt-2">
+                        <div class="text-center">
+                            <span class="text-green-400 font-bold text-xl">${data.new.toLocaleString()}</span>
+                            <p class="text-gray-400">New</p>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-blue-400 font-bold text-xl">${data.active.toLocaleString()}</span>
+                            <p class="text-gray-400">Active</p>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-red-400 font-bold text-xl">${data.inactive.toLocaleString()}</span>
+                            <p class="text-gray-400">Inactive</p>
+                        </div>
+                    </div>
+                    <div class="w-full h-8 mt-4 rounded-full overflow-hidden flex" title="Visual Member Distribution">
+                        <div class="h-full bg-green-500" style="width: ${(data.new / data.total) * 100}%" title="New: ${data.new.toLocaleString()}"></div>
+                        <div class="h-full bg-blue-500" style="width: ${(data.active / data.total) * 100}%" title="Active: ${data.active.toLocaleString()}"></div>
+                        <div class="h-full bg-red-500" style="width: ${(data.inactive / data.total) * 100}%" title="Inactive: ${data.inactive.toLocaleString()}"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+
+        // --- DASHBOARD VARIATION 1: EXECUTIVE SUMMARY FOCUS ---
+        const DashboardVar1 = (data) => `
+            <!-- Top Row: Core KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                ${KPICard("System Conversion Rate", data.conversionRate, "trending-up")}
+                ${KPICard("Total Deposit Amount (MTD)", data.depositTotalAmount, "dollar-sign")}
+                ${KPICard("Total Deposit Count (MTD)", data.depositTotalCount, "users")}
+                ${KPICard("Inactive Telemarketers", data.systemAlerts[1].message.split(' ')[0], "x-circle")}
+            </div>
+
+            <!-- Middle Section: Strategy & Performance -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Col 1: Member Distribution (Big Chart) -->
+                <div class="lg:col-span-1">
+                    ${MemberDistributionComponent(data.leaderDistribution)}
+                </div>
+
+                <!-- Col 2 & 3: Top Performing Leaders -->
+                <div class="lg:col-span-2 space-y-6">
+                    ${LeaderTableComponent("Top 5 Leaders by Conversion Rate", data.leaderPerformance, 'rate', 'Conversion Rate')}
+                    ${LeaderTableComponent("Top 5 Leaders by Leader Revenue", data.leaderPerformance, 'revenue', 'Revenue')}
+                </div>
+            </div>
+
+            <!-- Bottom Row: System Health & Admin -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Col 1 & 2: System Alerts -->
+                <div class="lg:col-span-2">
+                    ${SystemAlertsComponent(data.systemAlerts)}
+                </div>
+
+                <!-- Col 3: User Management -->
+                <div class="lg:col-span-1">
+                    ${UserRoleComponent(data)}
+                </div>
+            </div>
+        `;
+
+        // --- DASHBOARD VARIATION 2: ACTION-ORIENTED FOCUS ---
+        const DashboardVar2 = (data) => `
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Left Sidebar: Alerts and Quick Actions (Prominent) -->
+                <div class="lg:col-span-1 space-y-6">
+                    ${SystemAlertsComponent(data.systemAlerts)}
+                    ${UserRoleComponent(data)}
+                </div>
+                
+                <!-- Main Content Area -->
+                <div class="lg:col-span-3 space-y-6">
+                    <!-- Top Row: Core KPIs (More compact) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+                        <div class="col-span-2">
+                             ${KPICard("System Conversion Rate", data.conversionRate, "trending-up")}
+                        </div>
+                        <div class="col-span-3 grid grid-cols-3 gap-4">
+                            ${KPICard("Total Amount", data.depositTotalAmount, "dollar-sign")}
+                            ${KPICard("Deposit Count", data.depositTotalCount, "users")}
+                            ${KPICard("Leaders", data.leadersCount, "monitor")}
+                        </div>
+                    </div>
+
+                    <!-- Member Distribution (Visual Priority) -->
+                    <div class="grid grid-cols-1">
+                        ${MemberDistributionComponent(data.leaderDistribution)}
+                    </div>
+
+                    <!-- Leader Performance (Tabbed for efficiency) -->
+                    <div class="card p-4">
+                        <h3 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">Top 5 Leader Performance</h3>
+                        <div id="var2-leader-tabs">
+                             <div class="flex border-b border-gray-700 mb-3">
+                                <button onclick="showVar2Tab('conv')" id="tab-conv" class="px-4 py-2 text-sm font-medium border-b-2 border-blue-500 text-blue-500">By Conversion Rate</button>
+                                <button onclick="showVar2Tab('rev')" id="tab-rev" class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-white">By Revenue</button>
+                            </div>
+
+                            <div id="var2-conv-content">
+                                ${LeaderTableComponent("Top 5 Leaders by Conversion Rate", data.leaderPerformance, 'rate', 'Conversion Rate')}
+                            </div>
+                            <div id="var2-rev-content" class="hidden">
+                                ${LeaderTableComponent("Top 5 Leaders by Leader Revenue", data.leaderPerformance, 'revenue', 'Revenue')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // --- DASHBOARD VARIATION 3: PERFORMANCE DEEP DIVE ---
+        const DashboardVar3 = (data) => `
+            <!-- Top Row: Compact KPIs -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                ${KPICard("Conversion Rate", data.conversionRate, "trending-up")}
+                ${KPICard("Total Deposit Amount", data.depositTotalAmount, "dollar-sign")}
+                ${KPICard("Leaders", data.leadersCount, "monitor")}
+                ${KPICard("Telemarketers", data.telemarketersCount, "users")}
+            </div>
+
+            <!-- Middle Section: Primary Focus (Side-by-Side Leader Tables) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Left: Conversion Performance (Acquisition Focus) -->
+                ${LeaderTableComponent("Leader Ranking: Conversion Rate", data.leaderPerformance, 'rate', 'Conversion Rate')}
+                
+                <!-- Right: Revenue Performance (Value Focus) -->
+                ${LeaderTableComponent("Leader Ranking: Total Revenue", data.leaderPerformance, 'revenue', 'Revenue')}
+            </div>
+
+            <!-- Bottom Row: System Health & Distribution -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Col 1: Member Distribution -->
+                <div class="lg:col-span-1">
+                    ${MemberDistributionComponent(data.leaderDistribution)}
+                </div>
+
+                <!-- Col 2 & 3: Alerts and Quick Actions -->
+                <div class="lg:col-span-2 space-y-6">
+                    ${SystemAlertsComponent(data.systemAlerts)}
+                    ${UserRoleComponent(data)}
+                </div>
+            </div>
+        `;
+
+        // --- Controller Logic ---
+        
+        const container = document.getElementById('dashboard-container');
+        const buttons = {
+            'var1': document.getElementById('btn-var1'),
+            'var2': document.getElementById('btn-var2'),
+            'var3': document.getElementById('btn-var3')
+        };
+        const dashboardFunctions = {
+            'var1': DashboardVar1,
+            'var2': DashboardVar2,
+            'var3': DashboardVar3
+        };
+        const activeClass = 'bg-blue-600 hover:bg-blue-700';
+        const inactiveClass = 'bg-gray-600 hover:bg-gray-700';
+        
+        let currentDashboard = 'var1';
+
+        function renderDashboard(key) {
+            currentDashboard = key;
+            container.innerHTML = dashboardFunctions[key](DUMMY_DATA);
+            
+            // Re-render Lucide icons after injecting new HTML
+            // --- FIXED: Use functions/objects from window scope ---
+            if (typeof window.lucideCreateIcons !== 'undefined') {
+                window.lucideCreateIcons({ icons: window.LUCIDE_ICONS });
+            }
+            // ------------------------------------------------------
+
+
+            // Update button styles
+            // --- FIXED: InvalidCharacterError by splitting class strings ---
+            Object.keys(buttons).forEach(k => {
+                const activeClasses = activeClass.split(' ');
+                const inactiveClasses = inactiveClass.split(' ');
+
+                // Remove all possible state classes
+                buttons[k].classList.remove(...activeClasses, ...inactiveClasses);
+
+                // Add the correct state classes
+                if (k === key) {
+                    buttons[k].classList.add(...activeClasses);
+                } else {
+                    buttons[k].classList.add(...inactiveClasses);
+                }
+            });
+            // ----------------------------------------------------------
+
+            // Specific logic for Variation 2 Tabs
+            if (key === 'var2') {
+                setTimeout(() => showVar2Tab('conv'), 0);
+            }
+        }
+
+        // Global function for Variation 2 tab switching (needs to be global since it's in injected HTML)
+        window.showVar2Tab = (type) => {
+            const convBtn = document.getElementById('tab-conv');
+            const revBtn = document.getElementById('tab-rev');
+            const convContent = document.getElementById('var2-conv-content');
+            const revContent = document.getElementById('var2-rev-content');
+
+            const activeStyle = "border-blue-500 text-blue-500";
+            const inactiveStyle = "border-transparent text-gray-400 hover:text-white";
+
+            if (type === 'conv') {
+                convBtn.className = convBtn.className.replace(inactiveStyle, activeStyle);
+                revBtn.className = revBtn.className.replace(activeStyle, inactiveStyle);
+                convContent.classList.remove('hidden');
+                revContent.classList.add('hidden');
+            } else {
+                revBtn.className = revBtn.className.replace(inactiveStyle, activeStyle);
+                convBtn.className = convBtn.className.replace(activeStyle, inactiveStyle);
+                revContent.classList.remove('hidden');
+                convContent.classList.add('hidden');
+            }
+        };
+
+        // Event Listeners
+        buttons.var1.addEventListener('click', () => renderDashboard('var1'));
+        buttons.var2.addEventListener('click', () => renderDashboard('var2'));
+        buttons.var3.addEventListener('click', () => renderDashboard('var3'));
+
+        // Initial render
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDashboard('var1');
+        });
+
+    </script>
+</body>
+</html>
+
