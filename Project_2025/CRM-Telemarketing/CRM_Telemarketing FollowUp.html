@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Telemarkerting Follow-up Workflow v1.1</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for professional look and feel */
+        :root {
+            --primary-color: #10b981; /* Emerald 500 */
+            --secondary-color: #3b82f6; /* Blue 500 */
+            --bg-color: #f9fafb; /* Gray 50 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+        }
+        .step-card {
+            transition: all 0.3s ease;
+        }
+        .step-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        .security-note {
+            border-left: 4px solid #f87171; /* Red 400 */
+            background-color: #fef2f2; /* Red 50 */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header: UPDATED TITLE COLOR -->
+        <header class="text-center mb-10 p-6 bg-white shadow-xl rounded-xl">
+            <!-- Changed text-gray-900 to text-blue-700 -->
+            <h1 class="text-4xl font-extrabold text-blue-700 mb-2">
+                CRM: Telemarketer Follow-Up Workflow
+            </h1>
+            <p class="text-xl text-gray-600">
+                Automated Lead Ingestion and 3-Attempt WhatsApp Follow-up (MVP)
+            </p>
+        </header>
+
+        <!-- Actors/Entities Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 border-b-2 border-emerald-500 pb-2">
+                1. Key Actors and Entities
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                
+                <!-- Actor Card: Data Source -->
+                <div class="bg-white p-5 rounded-lg shadow-lg border-t-4 border-blue-500">
+                    <p class="text-lg font-semibold text-gray-900">Data Source (Whitelabel)</p>
+                    <p class="text-sm text-gray-500 mt-1">Provides raw member/transaction data for ingestion.</p>
+                </div>
+
+                <!-- Actor Card: CRM System -->
+                <div class="bg-white p-5 rounded-lg shadow-lg border-t-4 border-blue-500">
+                    <p class="text-lg font-semibold text-gray-900">CRM System</p>
+                    <p class="text-sm text-gray-500 mt-1">Executes validation, assignment, and status updates.</p>
+                </div>
+
+                <!-- Actor Card: WhatsApp API -->
+                <div class="bg-white p-5 rounded-lg shadow-lg border-t-4 border-blue-500">
+                    <p class="text-lg font-semibold text-gray-900">WhatsApp API</p>
+                    <p class="text-sm text-gray-500 mt-1">Provides number validation and messaging services.</p>
+                </div>
+
+                <!-- Actor Card: Telemarketer -->
+                <div class="bg-white p-5 rounded-lg shadow-lg border-t-4 border-blue-500">
+                    <p class="text-lg font-semibold text-gray-900">Telemarketer & Member</p>
+                    <p class="text-sm text-gray-500 mt-1">The user executing the follow-up and the customer receiving it.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Steps Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b-2 border-emerald-500 pb-2">
+                2. Detailed Workflow Steps (The 3-Attempt Protocol)
+            </h2>
+
+            <div class="space-y-6">
+
+                <!-- Step 1: Data Ingestion -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-xl font-extrabold text-white bg-emerald-500 rounded-full h-8 w-8 flex items-center justify-center">1</span>
+                        <h3 class="text-xl font-bold text-gray-900">Data Ingestion</h3>
+                    </div>
+                    <p class="text-gray-700">The CRM System executes <b>Automated Scraping (UI Automation)</b> to retrieve daily member and transaction reports from the Data Source.</p>
+                    <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
+                        <span class="font-semibold text-yellow-800">Outcome:</span> Import records into CRM system.
+                        <p class="font-bold text-red-600 mt-1">Action Item: Access permission for the Nuke system will be granted for data extraction.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: WhatsApp Validation -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-xl font-extrabold text-white bg-emerald-500 rounded-full h-8 w-8 flex items-center justify-center">2</span>
+                        <h3 class="text-xl font-bold text-gray-900">WhatsApp Validation (Hygiene)</h3>
+                    </div>
+                    <p class="text-gray-700">The CRM System calls the WhatsApp API to validate if the member's phone number is active on WhatsApp.</p>
+                    <!-- OUTCOME SPLIT FIXED -->
+                    <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
+                        <span class="font-semibold text-yellow-800">Outcome:</span>
+                        <ul class="list-disc list-inside ml-4 mt-1 space-y-0.5">
+                            <li>YES (Active) → Proceed to Step 3.0.</li>
+                            <li>NO (Invalid) → Set status to <b>'Inactive'</b>; proceed to Step 7.0 (Completion of Follow Up).</li>
+                        </ul>
+                    </div>
+                    <div class="mt-3 p-3 text-sm rounded-lg security-note">
+                        <span class="font-bold">CRITICAL SECURITY/HYGIENE:</span> Filters bad data and prevents wasted effort and potential messaging fees.
+                    </div>
+                </div>
+
+                <!-- Step 3: Lead Assignment Logic -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-xl font-extrabold text-white bg-emerald-500 rounded-full h-8 w-8 flex items-center justify-center">3</span>
+                        <h3 class="text-xl font-bold text-gray-900">Lead Assignment Logic</h3>
+                    </div>
+                    <p class="text-gray-700">Check for referral codes. If a referral exists, assign to the specific Telemarketer. If not ('Default Member'), assign based on KPI priority (Telemarketer with the <b>lowest unreached KPI target</b>).</p>
+                    <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
+                        <span class="font-semibold text-yellow-800">Outcome:</span> Assigned → Proceed to Step 4.0.
+                    </div>
+                </div>
+
+                <!-- Step 4: Attempt 1 (Initial Contact) -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-xl font-extrabold text-white bg-emerald-500 rounded-full h-8 w-8 flex items-center justify-center">4</span>
+                        <h3 class="text-xl font-bold text-gray-900">Attempt 1 (Day 1 Contact)</h3>
+                    </div>
+                    <p class="text-gray-700">The Telemarketer views the lead and initiates the first contact via the designated <b>ONE active number</b>.</p>
+                    <!-- OUTCOME SPLIT FIXED -->
+                    <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
+                        <span class="font-semibold text-yellow-800">Outcome:</span>
+                        <ul class="list-disc list-inside ml-4 mt-1 space-y-0.5">
+                            <li>Member Response (Yes) → Proceed to Step 8.0 (Goal/Conversion).</li>
+                            <li>No Response (No) → Proceed to Step 5.0 (Wait).</li>
+                        </ul>
+                    </div>
+                    <div class="mt-3 p-3 text-sm rounded-lg security-note">
+                        <span class="font-bold">ANTI-SPAM PROTOCOL:</span> System logs the attempt timestamp and initiates the grace period.
+                    </div>
+                </div>
+
+                <!-- Step 5: Wait Period -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-xl font-extrabold text-white bg-emerald-500 rounded-full h-8 w-8 flex items-center justify-center">5</span>
+                        <h3 class="text-xl font-bold text-gray-900">Wait Period (Grace Period)</h3>
+                    </div>
+                    <p class="text-gray-700">The CRM System waits for a defined <b>Grace Period (e.g., 24 hours)</b> to elapse before allowing the next attempt.</p>
+                    <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
+                        <span class="font-semibold text-yellow-800">Outcome:</span> Time Elapsed → Proceed to Step 6.0.
+                    </div>
+                    <div class="mt-3 p-3 text-sm rounded-lg security-note">
+                        <span class="font-bold">COMPLIANCE:</span> Must strictly enforce this delay to avoid automated banning by WhatsApp. This is vital for maintaining business continuity.
+                    </div>
+                </div>
+
+                <!-- Step 6: Attempt 2 & 3 -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-xl font-extrabold text-white bg-emerald-500 rounded-full h-8 w-8 flex items-center justify-center">6</span>
+                        <h3 class="text-xl font-bold text-gray-900">Attempt 2 & 3 (Day 2 & Day 3)</h3>
+                    </div>
+                    <p class="text-gray-700">Subsequent follow-up messages are performed (Attempt 2 on Day 2, Attempt 3 on Day 3) if no response is received.</p>
+                    <!-- OUTCOME SPLIT FIXED -->
+                    <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
+                        <span class="font-semibold text-yellow-800">Outcome:</span>
+                        <ul class="list-disc list-inside ml-4 mt-1 space-y-0.5">
+                            <li>Attempt Limit Reached (3) → Proceed to Step 7.0 (Completion of Follow Up).</li>
+                            <li>Member Response → Proceed to Step 8.0 (Goal/Conversion).</li>
+                        </ul>
+                    </div>
+                    <div class="mt-3 p-3 text-sm rounded-lg security-note">
+                        <span class="font-bold">MESSAGE VARIATION:</span> System must ensure messages for different members <b>do not use the same template</b> on the same day to avoid triggering spam filters.
+                    </div>
+                </div>
+                
+                <div class="flex justify-center w-full">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+
+                <!-- Final Outcomes (EOL and Conversion) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Step 7: Completion of Follow Up -->
+                    <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-8 border-red-500">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <span class="text-xl font-extrabold text-white bg-red-500 rounded-full h-8 w-8 flex items-center justify-center">7</span>
+                            <h3 class="text-xl font-bold text-gray-900">Completion of Follow Up</h3>
+                        </div>
+                        <p class="text-gray-700">If <b>three attempts</b> are made without success, the member lead is retired from the active follow-up queue.</p>
+                        <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
+                            <span class="font-semibold text-yellow-800">Outcome:</span> Member status set to <b>'Dormant'</b>.
+                        </div>
+                        <div class="mt-3 p-3 text-sm rounded-lg security-note">
+                            <span class="font-bold">DATA STORAGE:</span> Chat history retained for historical reporting. Store efficiently (<b>metadata only</b>) to manage large data volumes.
+                        </div>
+                    </div>
+
+                    <!-- Step 8: Goal/Conversion -->
+                    <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-8 border-green-500">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <span class="text-xl font-extrabold text-white bg-green-500 rounded-full h-8 w-8 flex items-center justify-center">8</span>
+                            <h3 class="text-xl font-bold text-gray-900">Goal/Conversion</h3>
+                        </div>
+                        <p class="text-gray-700">The member has responded. The Telemarketer engages in standard interaction to achieve the conversion goal.</p>
+                        <div class="mt-3 p-3 text-sm rounded-lg bg-yellow-50 border border-yellow-200">
+                            <span class="font-semibold text-yellow-800">Outcome:</span> <b>Process End.</b> The lead moves to the standard CRM/Service flow.
+                        </div>
+                        <p class="mt-3 text-sm text-green-700">A successful engagement/conversion meets the Telemarketer's KPI.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        
+        <!-- Constraints Section -->
+        <section class="mt-12 p-6 bg-blue-50 rounded-xl shadow-inner border-l-4 border-blue-600">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                3. Constraints and Assumptions (Technical Risk & Hygiene)
+            </h2>
+            <ul class="list-disc list-inside space-y-2 text-gray-700 pl-4">
+                <!-- API Preference: Label strong, text normal -->
+                <li><strong class="text-blue-700">API Preference:</strong> The workflow prioritizes the stable <b>Mobile Number Validation API</b> for the MVP.</li>
+                <!-- Current Limitation: Label strong, text normal -->
+                <li><strong class="text-red-700">Current Limitation:</strong> The API cannot currently identify which party blocked a Telemarketer. <b>Mitigation planning is required.</b></li>
+                <!-- Data Integrity/Contingency: Label strong, text normal (REVISED) -->
+                <li><strong class="text-blue-700">Data Integrity/Contingency:</strong> If a Telemarketer's number is banned, a new number must be registered to maintain webhook access and chat history continuity.</li>
+                <!-- KPI Alignment: Label strong, text normal (REVISED) -->
+                <li><strong class="text-blue-700">KPI Alignment:</strong> A successful engagement/conversion meets the Telemarketer's KPI; an unsuccessful lead retires the lead without meeting the KPI. The number of contact attempts allowed is governed by the default system configuration.</li>
+            </ul>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center mt-12 pt-6 border-t border-gray-200 text-gray-500 text-sm">
+            Workflow designed for clarity and compliance in high-volume member outreach.
+        </footer>
+    </div>
+
+</body>
+</html>
