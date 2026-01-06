@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Escape Room v1.14 - Simple Mockup</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* Custom animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes progress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+            50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
+        }
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+        @keyframes flash-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 50px 0 rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 1); }
+        }
+        .animate-flash-red {
+            animation: flash-red 1s infinite;
+        }
+        .cursor-pointer {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Icons (Inline SVGs) ---
+        const Icons = {
+            Lock: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+            Unlock: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+            CheckCircle: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>,
+            Clock: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            Upload: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>,
+            ShieldAlert: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>,
+            Zap: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            ChevronRight: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
+            ArrowLeft: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>,
+            User: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+            Terminal: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>,
+            AlertTriangle: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>,
+            FileText: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>,
+            Play: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+            Trophy: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>,
+            BarChart3: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>,
+            Globe: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+            Flag: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>,
+            Download: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+            XCircle: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>,
+            Ban: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
+        };
+
+        // --- Configuration & Missions ---
+        const UPLOAD_DESTINATION_URL = "https://agileterraforming-my.sharepoint.com/:f:/g/personal/ecopoiesis_agileterraforming_onmicrosoft_com/IgAIOQuwu-40Q5UOND7AFchEAaNfQoJGIvqjRD7jWPS7jMU";
+
+        const MISSIONS = [
+        { 
+            id: 1, 
+            name: "Data Integrity Audit", 
+            objective: "Identify and fix all data corruptions in the PO Log. Cross-reference with the Employee list to find unauthorized requestors (terminated staff).", 
+            duration: 1800,
+            datasetUrl: "https://agileterraforming-my.sharepoint.com/:f:/g/personal/ecopoiesis_agileterraforming_onmicrosoft_com/IgC6vZYppH1-R5CviyeNET2TAYZpauJkhv8qBMOslKVHxB4?e=JSGsck" 
+        },
+        { 
+            id: 2, 
+            name: "Financial Enrichment", 
+            objective: "Link the Approval Limits to the PO Log. Calculate and highlight all limit breaches where requestors exceeded their authorized spending levels.", 
+            duration: 1800,
+            datasetUrl: "https://agileterraforming-my.sharepoint.com/:f:/g/personal/ecopoiesis_agileterraforming_onmicrosoft_com/IgAtS_0j905jS7IFiN7ME0GdAU2M8f1uE3sGw4GiC5upoj4?e=ZY7F64" 
+        },
+        { 
+            id: 3, 
+            name: "Leakage Analysis", 
+            objective: "Generate a summary report highlighting the top 3 risky vendors based on rejection rates and total invoice volume.", 
+            duration: 1800,
+            datasetUrl: "https://agileterraforming-my.sharepoint.com/:f:/g/personal/ecopoiesis_agileterraforming_onmicrosoft_com/IgBcfOpmq_FcR4xsF8E4AXKJAXAxkPNA8E4Ac-YDf2ENiuA?e=EnrJPY" 
+        },
+        { 
+            id: 4, 
+            name: "Control Tower", 
+            objective: "Create a dynamic dashboard template with Slicers for Dept_Code and Vendor_Name to monitor spend versus budget real-time.", 
+            duration: 1800,
+            datasetUrl: "https://agileterraforming-my.sharepoint.com/:f:/g/personal/ecopoiesis_agileterraforming_onmicrosoft_com/IgBt_-CSrLOjTKNIPCb05xVgAZedJ_Z_2EHB8yo7JCU7jaI?e=9O3Vvg" 
+        },
+        { 
+            id: 5, 
+            name: "Executive Briefing", 
+            objective: "Prepare a 3-slide CEO presentation using AI to summarize findings and propose a system upgrade to prevent future leakage.", 
+            duration: 1800,
+            datasetUrl: "https://agileterraforming-my.sharepoint.com/:f:/g/personal/ecopoiesis_agileterraforming_onmicrosoft_com/IgBCCXHoVV5XSY6xc-VtLVirAWnhDiFqgiIpIUngOC7VhiQ?e=wwHOTM" 
+        }
+        ];
+
+        const MISSION_OVERTIME = 120; // 2 minutes
+        const BRIEFING_DURATION = 300; // 5 minutes
+
+        const App = () => {
+        // Navigation
+        const [view, setView] = useState('login'); // login, dashboard, briefing, active, completed, billboard
+        const [teamName, setTeamName] = useState('');
+        
+        // Game State
+        const [currentMissionIdx, setCurrentMissionIdx] = useState(0);
+        const [completedMissions, setCompletedMissions] = useState([]);
+        const [failedMissions, setFailedMissions] = useState([]); 
+        const [missionTimes, setMissionTimes] = useState({}); // Track time taken for each mission
+        const [isMissionStarted, setIsMissionStarted] = useState(false);
+        const [isOvertime, setIsOvertime] = useState(false);
+        const [timeRemaining, setTimeRemaining] = useState(0);
+        const [isUploading, setIsUploading] = useState(false);
+        const [verificationLog, setVerificationLog] = useState([]);
+
+        // Briefing Timer States
+        const [briefingTime, setBriefingTime] = useState(0);
+        const [isBriefingOvertime, setIsBriefingOvertime] = useState(false);
+        
+        // Simulated Global Data
+        const [leaderboardData] = useState([
+            { name: "Team Alpha", missionsDone: 4, totalPoints: 4, lastTime: "12:45" },
+            { name: "Cyber Sharks", missionsDone: 3, totalPoints: 3, lastTime: "22:15" },
+            { name: "Data Wizards", missionsDone: 2, totalPoints: 1.5, lastTime: "31:40" },
+            { name: "Excel Elites", missionsDone: 1, totalPoints: 1, lastTime: "28:10" },
+            { name: "Audit Squad", missionsDone: 1, totalPoints: 0.5, lastTime: "32:05" },
+        ]);
+
+        const formatTime = (seconds) => {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        };
+
+        const handleMissionFailure = () => {
+            const failedId = MISSIONS[currentMissionIdx].id;
+            setFailedMissions(prev => [...prev, failedId]);
+            
+            // Record max duration for failure
+            setMissionTimes(prev => ({...prev, [failedId]: MISSIONS[currentMissionIdx].duration + MISSION_OVERTIME}));
+            
+            setIsMissionStarted(false);
+            setIsOvertime(false);
+            
+            // Proceed to next mission if available, else completed view
+            if (currentMissionIdx < MISSIONS.length - 1) {
+                setCurrentMissionIdx(prev => prev + 1);
+            } else {
+                setView('completed');
+                return;
+            }
+            setView('dashboard');
+        };
+
+        // General Timer Effect
+        useEffect(() => {
+            let interval = null;
+
+            // Mission Timer Logic
+            if (isMissionStarted && timeRemaining > 0) {
+                interval = setInterval(() => setTimeRemaining(prev => prev - 1), 1000);
+            } else if (isMissionStarted && timeRemaining === 0) {
+                if (!isOvertime) {
+                    setIsOvertime(true);
+                    setTimeRemaining(MISSION_OVERTIME);
+                } else {
+                    // Overtime ran out - Mission FAILED
+                    handleMissionFailure();
+                }
+            }
+
+            // Briefing Timer Logic
+            if (view === 'briefing' && briefingTime > 0) {
+                interval = setInterval(() => setBriefingTime(prev => prev - 1), 1000);
+            } else if (view === 'briefing' && briefingTime === 0 && !isBriefingOvertime) {
+                // Trigger Briefing Timeout Alert
+                setIsBriefingOvertime(true); 
+            }
+
+            return () => clearInterval(interval);
+        }, [view, isMissionStarted, timeRemaining, isOvertime, briefingTime, isBriefingOvertime, currentMissionIdx]);
+
+
+        const handleManualUpload = () => {
+            setIsUploading(true);
+            
+            // 1. Calculate Time Taken (Duration - Remaining)
+            const duration = MISSIONS[currentMissionIdx].duration;
+            let timeTaken = duration - timeRemaining;
+            if (isOvertime) {
+                timeTaken = duration + (MISSION_OVERTIME - timeRemaining);
+            }
+
+            // 2. Open OneDrive Link
+            window.open(UPLOAD_DESTINATION_URL, '_blank');
+            
+            // 3. Start Simulated Progress
+            setVerificationLog([
+                `Launching Secure Uplink...`,
+                `Destination: OneDrive Shared Folder`,
+                `Waiting for manual transfer...`
+            ]);
+            
+            // 4. Simulate verification and success
+            setTimeout(() => {
+                setVerificationLog(prev => [...prev, "Verifying submission token..."]);
+                
+                setTimeout(() => {
+                    setVerificationLog(prev => [...prev, "Manual Upload Confirmed.", "ACCESS GRANTED."]);
+                    
+                    setTimeout(() => {
+                        setIsUploading(false);
+                        setIsMissionStarted(false);
+                        setIsOvertime(false);
+                        
+                        const missionId = MISSIONS[currentMissionIdx].id;
+                        setCompletedMissions(prev => [...prev, missionId]);
+                        setMissionTimes(prev => ({...prev, [missionId]: timeTaken})); 
+                        
+                        if (currentMissionIdx < MISSIONS.length - 1) {
+                            setCurrentMissionIdx(prev => prev + 1);
+                            setView('dashboard');
+                        } else {
+                            setView('completed');
+                        }
+                    }, 1500);
+                }, 3000);
+            }, 1000);
+        };
+
+        const handleGiveUp = () => {
+            const confirmPass = window.confirm("Are you sure you want to abort? This will mark the mission as FAILED.");
+            if (confirmPass) {
+                handleMissionFailure();
+            }
+        };
+
+        const startBriefing = (idx) => {
+            setCurrentMissionIdx(idx);
+            setBriefingTime(BRIEFING_DURATION);
+            setIsBriefingOvertime(false);
+            setView('briefing');
+        };
+
+        const initiateMission = () => {
+            setTimeRemaining(MISSIONS[currentMissionIdx].duration);
+            setIsMissionStarted(true);
+            setIsOvertime(false);
+            setView('active');
+        };
+        
+        // Handle clicking a mission card on the dashboard
+        const handleMissionClick = (idx) => {
+            const isFailed = failedMissions.includes(MISSIONS[idx].id);
+            if(isFailed) return; // Cannot re-do failed missions
+
+            // Only allow interaction if it's the current mission
+            if (idx === currentMissionIdx) {
+                if (isMissionStarted) {
+                    setView('active');
+                } else {
+                    startBriefing(idx);
+                }
+            }
+        };
+
+        // --- RENDERING HELPERS ---
+        const sortedLeaderboard = [...leaderboardData].sort((a,b) => b.totalPoints - a.totalPoints);
+        const top3 = sortedLeaderboard.slice(0, 3);
+        const rest = sortedLeaderboard.slice(3);
+        const mission = MISSIONS[currentMissionIdx];
+
+        return (
+            <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-12 font-sans relative overflow-x-hidden">
+            
+            {/* 1. LOGIN VIEW */}
+            {view === 'login' && (
+                <div className="flex flex-col items-center justify-center min-h-[80vh]">
+                <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-10 shadow-2xl relative">
+                    {/* LEADERBOARD BUTTON REMOVED HERE */}
+                    <div className="text-center mb-10">
+                    <Icons.Terminal className="text-cyan-400 w-16 h-16 mx-auto mb-4" />
+                    <h1 className="text-3xl font-bold text-white tracking-tighter">EXCEL ESCAPE v1.3</h1>
+                    <p className="text-slate-500 text-xs font-mono mt-2 uppercase tracking-widest italic">Enter you credentials to begin the audit.</p>
+                    </div>
+                    <div className="space-y-4">
+                    <div className="relative">
+                        <Icons.User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                        <input 
+                        type="text" 
+                        value={teamName}
+                        onChange={(e) => setTeamName(e.target.value)}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl py-4 pl-12 pr-6 text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                        placeholder="Enter Group Name..."
+                        />
+                    </div>
+                    <button 
+                        onClick={() => teamName && setView('dashboard')} 
+                        className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-cyan-900/20"
+                    >
+                        INITIATE LOGIN <Icons.ChevronRight className="w-5 h-5" />
+                    </button>
+                    </div>
+                </div>
+                </div>
+            )}
+
+            {/* 2. BILLBOARD VIEW (Code kept but not reachable) */}
+            {view === 'billboard' && (
+                <div className="max-w-6xl mx-auto">
+                    {/* ... (Existing Leaderboard Code) ... */}
+                </div>
+            )}
+
+            {/* 3. DASHBOARD VIEW */}
+            {view === 'dashboard' && (
+                <div className="max-w-5xl mx-auto">
+                <header className="mb-12 border-b border-slate-800 pb-8">
+                    <p className="text-cyan-400 font-mono text-[10px] tracking-widest mb-1 uppercase">AGENT > {teamName}</p>
+                    <h1 className="text-4xl font-bold">Mission Control</h1>
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {MISSIONS.map((m, idx) => {
+                    const isComp = completedMissions.includes(m.id);
+                    const isFailed = failedMissions.includes(m.id);
+                    const isCurr = idx === currentMissionIdx;
+                    const isLock = idx > currentMissionIdx;
+                    const recordedTime = missionTimes[m.id]; 
+
+                    let cardClasses = "p-8 rounded-[32px] border-2 transition-all cursor-pointer group ";
+                    if (isFailed) cardClasses += "border-red-600/50 bg-red-950/20 opacity-70 grayscale hover:grayscale-0 ";
+                    else if (isComp) cardClasses += "border-green-500/30 bg-green-500/5 ";
+                    else if (isCurr) cardClasses += "border-cyan-500 bg-cyan-500/10 scale-105 shadow-2xl ";
+                    else cardClasses += "border-slate-800 bg-slate-900/50 opacity-40 ";
+
+                    return (
+                        <div 
+                        key={m.id} 
+                        onClick={() => handleMissionClick(idx)} 
+                        className={cardClasses}
+                        >
+                        <div className="flex justify-between mb-8">
+                            {isFailed ? <Icons.XCircle className="text-red-600 w-8 h-8" /> : 
+                             isComp ? <Icons.CheckCircle className="text-green-500" /> : 
+                             isLock ? <Icons.Lock className="text-slate-600" /> : 
+                             <Icons.Unlock className="text-cyan-400 animate-pulse" />}
+                            <span className={`text-[10px] font-mono ${isFailed ? 'text-red-500' : 'text-cyan-400'}`}>M0{m.id}</span>
+                        </div>
+                        <h3 className={`text-xl font-bold mb-2 ${isFailed ? 'text-red-400 line-through' : ''}`}>
+                            {isLock ? "CLASSIFIED" : m.name}
+                        </h3>
+                        
+                        {/* Status Indicators */}
+                        {isFailed ? (
+                            <div className="mt-4">
+                                <div className="flex items-center gap-2 text-[10px] font-bold text-red-500 uppercase tracking-widest">
+                                    <Icons.Ban className="w-3 h-3" /> Mission Failed
+                                </div>
+                                {recordedTime && <p className="text-[10px] font-mono text-slate-500 mt-1 pl-5">Time: {formatTime(recordedTime)} (Timeout)</p>}
+                            </div>
+                        ) : isComp ? (
+                            <div className="mt-4">
+                                <div className="flex items-center gap-2 text-[10px] font-bold text-green-500 uppercase tracking-widest">
+                                    <Icons.CheckCircle className="w-3 h-3" /> Evidence Uploaded
+                                </div>
+                                {recordedTime && <p className="text-[10px] font-mono text-slate-500 mt-1 pl-5">Time Taken: {formatTime(recordedTime)}</p>}
+                            </div>
+                        ) : (isCurr && isMissionStarted) ? (
+                            <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-amber-500 uppercase tracking-widest animate-pulse">
+                                <Icons.Clock className="w-3 h-3" /> Pending Evidence
+                            </div>
+                        ) : null}
+
+                        {isCurr && !isFailed && <p className="text-cyan-400 text-xs font-bold uppercase mt-4 flex items-center gap-1">Open Dossier <Icons.ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></p>}
+                        </div>
+                    );
+                    })}
+                </div>
+                </div>
+            )}
+
+            {/* 4. BRIEFING VIEW */}
+            {view === 'briefing' && (
+                <div className="max-w-5xl mx-auto flex flex-col items-center justify-center min-h-[70vh] relative">
+                
+                {/* Briefing Timeout Alert Overlay */}
+                {isBriefingOvertime && (
+                    <div className="fixed inset-0 z-50 bg-red-950/90 backdrop-blur-md flex items-center justify-center p-6 animate-pulse">
+                    <div className="max-w-xl w-full bg-slate-900 border-4 border-red-600 rounded-[40px] p-10 text-center shadow-[0_0_100px_rgba(220,38,38,0.5)]">
+                        <Icons.AlertTriangle className="w-24 h-24 text-red-600 mx-auto mb-6 animate-bounce" />
+                        <h2 className="text-5xl font-black text-white mb-4 uppercase italic tracking-tighter">TIMEOUT!</h2>
+                        <p className="text-red-200 text-xl mb-10 font-bold leading-relaxed">
+                            Briefing window exceeded! Immediate deployment is mandatory.
+                        </p>
+                        <button 
+                            onClick={initiateMission}
+                            className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-6 rounded-3xl text-2xl shadow-xl transition-all hover:scale-105"
+                        >
+                            START MISSION NOW
+                        </button>
+                    </div>
+                    </div>
+                )}
+
+                <div className="bg-slate-900 border border-slate-700 rounded-[48px] p-12 max-w-2xl w-full shadow-2xl relative overflow-hidden">
+                    <div className="flex justify-between items-start mb-10">
+                    <div>
+                        <h2 className="text-cyan-400 font-mono text-[10px] mb-2 tracking-[0.3em] uppercase">Briefing in Progress</h2>
+                        <h1 className="text-3xl font-bold text-white">{mission.name}</h1>
+                    </div>
+                    <div className={`px-6 py-4 rounded-2xl border-2 transition-all ${isBriefingOvertime ? 'border-red-600 bg-red-600/20' : 'border-cyan-500/50 bg-cyan-500/5'}`}>
+                        <p className="text-[9px] font-mono uppercase text-center mb-1 text-slate-500 tracking-widest">
+                        TIMER
+                        </p>
+                        <p className={`text-3xl font-mono font-bold text-center ${isBriefingOvertime ? 'text-red-500' : 'text-white'}`}>
+                        {formatTime(briefingTime)}
+                        </p>
+                    </div>
+                    </div>
+
+                    <div className="bg-slate-950 p-8 rounded-3xl mb-8 italic text-slate-400 border-l-4 border-cyan-500 text-lg leading-relaxed shadow-inner">
+                    "{mission.objective}"
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4">
+                    <button 
+                        onClick={initiateMission} 
+                        className="flex-1 bg-cyan-600 py-5 rounded-2xl font-bold text-xl hover:bg-cyan-500 shadow-lg shadow-cyan-900/30 flex items-center justify-center gap-2 transition-all active:scale-95"
+                    >
+                        <Icons.Play className="w-6 h-6 fill-current" /> START MISSION
+                    </button>
+                    </div>
+                    <button onClick={() => setView('dashboard')} className="w-full mt-6 text-slate-600 text-xs font-bold hover:text-slate-400 transition-colors">RE-CHECK HQ DATA</button>
+                </div>
+                </div>
+            )}
+
+            {/* 5. ACTIVE MISSION VIEW */}
+            {view === 'active' && (
+                <div className={`max-w-6xl mx-auto transition-all duration-300 ${isOvertime && timeRemaining <= 30 ? 'animate-flash-red rounded-[50px] p-4' : ''}`}>
+                
+                {/* BACK BUTTON REMOVED HERE */}
+
+                {/* Overtime Critical Alert - Last 30 Seconds */}
+                {isOvertime && timeRemaining <= 30 && (
+                    <div className="fixed top-0 left-0 w-full h-2 bg-red-600 animate-[progress_1s_ease-in-out_infinite] z-50"></div>
+                )}
+
+                {/* Mission Lockdown Modal (Overtime) - UPDATED TO REMOVE BACKDROP */}
+                {isOvertime && timeRemaining > 30 && (
+                    <div className="fixed inset-0 z-40 flex items-start justify-center pt-10 pointer-events-none">
+                        <div className="bg-red-600 text-white px-8 py-2 rounded-full font-black animate-bounce shadow-[0_0_50px_rgba(220,38,38,0.5)] pointer-events-auto">
+                            CRITICAL FAILURE IMMINENT - SUBMIT NOW
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-6 mb-12 relative z-10">
+                    <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 flex-1 w-full">
+                    <p className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest mb-1">Active Objective</p>
+                    <h2 className="text-2xl font-bold">{mission.name}</h2>
+                    </div>
+                    <div className={`p-6 rounded-2xl border-2 transition-all min-w-[240px] ${
+                        isOvertime ? 'border-red-600 bg-red-950/50 scale-110 shadow-[0_0_30px_rgba(220,38,38,0.3)]' : 
+                        timeRemaining < 300 ? 'border-orange-500 bg-orange-500/10' : 'border-cyan-500/50 bg-cyan-500/5'
+                    }`}>
+                        <p className={`text-[10px] font-mono uppercase text-center mb-1 tracking-widest ${isOvertime ? 'text-red-400 font-bold animate-pulse' : 'text-slate-500'}`}>
+                            {isOvertime ? "CRITICAL OVERTIME" : "REMAINING"}
+                        </p>
+                        <p className={`text-5xl font-mono font-bold text-center ${
+                            isOvertime ? 'text-red-500 animate-pulse' : 
+                            timeRemaining < 300 ? 'text-orange-500' : 'text-white'
+                        }`}>
+                            {formatTime(timeRemaining)}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+                    <div className="flex flex-col gap-6">
+                    <div className="bg-slate-900/50 p-8 rounded-[32px] border border-slate-800">
+                        <h3 className="text-[10px] font-mono text-slate-500 uppercase mb-4 tracking-widest underline underline-offset-8">Intel Digest</h3>
+                        <p className="text-slate-300 italic text-lg leading-relaxed">"{mission.objective}"</p>
+                        <div className="mt-8 pt-8 border-t border-slate-800 flex gap-4">
+                        
+                        {/* Download Button ONLY for Mission 1 */}
+                        {mission.id === 1 && (
+                            <a href={mission.datasetUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-cyan-500 hover:text-cyan-400">
+                                <Icons.Download className="w-4 h-4" /> DOWNLOAD DATASET
+                            </a>
+                        )}
+
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={handleGiveUp}
+                        className="flex items-center gap-2 text-slate-800 hover:text-red-500 transition-colors w-fit px-2 text-xs font-mono group"
+                    >
+                        <Icons.Flag className="w-3 h-3 grayscale group-hover:grayscale-0" /> ABORT MISSION (FAIL)
+                    </button>
+                    </div>
+
+                    {/* UPLOAD SECTION - SIMPLIFIED */}
+                    <div className="relative z-50 bg-slate-800/20 border-2 border-dashed border-slate-800 rounded-[48px] p-12 flex flex-col items-center justify-center text-center">
+                    {isUploading ? (
+                        <div className="w-full space-y-6">
+                        <div className="bg-slate-950 p-6 rounded-2xl text-left font-mono text-[11px] text-cyan-400 border border-cyan-900/30">
+                            {verificationLog.map((log, i) => <div key={i} className="mb-1">{`> ${log}`}</div>)}
+                        </div>
+                        <div className="h-1 bg-slate-800 w-full rounded-full overflow-hidden">
+                            <div className="h-full bg-cyan-500 animate-[progress_3s_ease-in-out_infinite]"></div>
+                        </div>
+                        </div>
+                    ) : (
+                        <>
+                        <div className="bg-slate-900 w-24 h-24 rounded-full flex items-center justify-center mb-8 shadow-inner border border-slate-800">
+                            <Icons.Upload className="w-10 h-10 text-slate-600" />
+                        </div>
+                        <h3 className="text-3xl font-black text-white mb-2 tracking-tighter uppercase">Submit Dossier</h3>
+                        <p className="text-slate-500 text-sm mb-10 max-w-xs">Upload your evidence directly to the team folder.</p>
+                        <button 
+                            onClick={handleManualUpload} 
+                            className={`w-full font-black py-5 rounded-2xl shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
+                                isOvertime ? 'bg-red-600 hover:bg-red-500 text-white animate-pulse shadow-red-900/50' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950'
+                            }`}
+                        >
+                            UPLOAD EVIDENCE <Icons.Zap className="w-5 h-5 fill-current" />
+                        </button>
+                        </>
+                    )}
+                    </div>
+                </div>
+                </div>
+            )}
+
+            {/* 6. COMPLETED VIEW */}
+            {view === 'completed' && (
+                <div className="text-center py-20 max-w-xl mx-auto">
+                <Icons.Trophy className="w-24 h-24 text-cyan-400 mx-auto mb-8 drop-shadow-[0_0_20px_rgba(34,211,238,0.3)]" />
+                <h1 className="text-6xl font-black mb-4 italic tracking-tighter">VAULT SECURED</h1>
+                <p className="text-slate-400 text-lg mb-12">Congratulations, Team {teamName}. All audits are finalized.</p>
+                <div className="text-left bg-slate-900 p-8 rounded-3xl mb-8 border border-slate-800">
+                    <h3 className="text-xl font-bold mb-6 text-white text-center border-b border-slate-800 pb-4">MISSION DEBRIEF</h3>
+                    <div className="space-y-4">
+                        <div className="flex justify-between text-xs text-slate-500 uppercase font-bold px-4 mb-2">
+                            <span>Mission</span>
+                            <div className="flex gap-12">
+                                <span className="w-24 text-center">Status</span>
+                                <span className="w-24 text-right">Time Taken</span>
+                            </div>
+                        </div>
+                        {MISSIONS.map(m => (
+                            <div key={m.id} className="flex justify-between items-center font-mono text-sm bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <span className="text-slate-300 font-bold truncate pr-4">M0{m.id}: {m.name}</span>
+                                <div className="flex gap-12 items-center">
+                                    <span className={`w-24 text-center font-bold ${failedMissions.includes(m.id) ? 'text-red-500' : 'text-green-500'}`}>
+                                        {failedMissions.includes(m.id) ? 'FAILED' : 'SUCCESS'}
+                                    </span>
+                                    <span className="w-24 text-right text-slate-400">
+                                        {missionTimes[m.id] ? formatTime(missionTimes[m.id]) : '--:--'}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <button onClick={() => window.location.reload()} className="bg-slate-800 hover:bg-slate-700 text-white px-12 py-5 rounded-3xl font-bold transition-all">MISSION END</button>
+                </div>
+            )}
+
+            <style>{`
+                @keyframes progress {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
+                }
+            `}</style>
+            </div>
+        );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
